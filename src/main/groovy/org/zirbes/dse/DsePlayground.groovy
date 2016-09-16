@@ -3,10 +3,21 @@ package org.zirbes.dse
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class DsePlayground {
+class DsePlayground implements Closeable {
+
+    protected final GraphDemo demo
+
+    DsePlayground() {
+        demo = new GraphDemo()
+    }
 
     void run() {
-        new GraphDemo().graphStuff()
+        demo.run()
+    }
+
+    @Override
+    void close() {
+        demo.close()
     }
 
 }
