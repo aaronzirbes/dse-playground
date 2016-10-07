@@ -31,7 +31,11 @@ schema.propertyKey('id').Uuid().ifNotExists().create()
 // three states here deleted, disabled, active
 schema.vertexLabel('state').properties('name').ifNotExists().create()
 
-schema.vertexLabel('organization').properties('id', 'name', 'created', 'updated').ifNotExists().create()
+schema.vertexLabel('organization').properties('id',
+                                              'name',
+                                              'status',
+                                              'created',
+                                              'updated').ifNotExists().create()
 
 schema.vertexLabel('organizationalUnit')
       .properties('id', 'name', 'created', 'updated')
@@ -100,6 +104,8 @@ schema.edgeLabel('pfmSource')
       .connection('user', 'pfmentity')
       .connection('privilege', 'pfmentity')
       .connection('vehicle', 'pfmentity')
+      .connection('organizationalUnit', 'pfmentity')  //rg added
+      .connection('organization', 'pfmentity')  //rg added
       .ifNotExists().create()
 
 schema.edgeLabel('state')
@@ -145,6 +151,12 @@ schema.edgeLabel('installedInto')
       .connection('display', 'vehicle')
       .ifNotExists().create()
 
+schema.edgeLabel('based')
+      .single()
+      .properties('created')
+      .connection('driver', 'terminal')
+      .ifNotExists().create()
+
 schema.edgeLabel('drives')
       .properties('created')
       .connection('driver', 'vehicle')
@@ -156,9 +168,9 @@ schema.edgeLabel('isUser')
       .connection('driver', 'user')
       .ifNotExists().create()
 
-schema.edgeLabel('drivesOutOf')
+schema.edgeLabel('hasDriver')
       .properties('created')
-      .connection('driver', 'terminal')
+      .connection('terminal', 'driver')
       .ifNotExists().create()
 
 schema.edgeLabel('ofUnit')
@@ -176,15 +188,24 @@ schema.edgeLabel('tennantOf')
       .connection('organization', 'tennant')
       .ifNotExists().create()
 
-schema.edgeLabel('hasVehicle')
+schema.edgeLabel('hasDevice')
       .properties('created')
-      .connection('organizationalUnit', 'vehicle')
-      .connection('organization', 'vehicle')
+      .connection('vehicle', 'device')
       .ifNotExists().create()
 
 schema.edgeLabel('outputs')
       .properties('created')
       .connection('vehicle', 'display')
+      .ifNotExists().create()
+
+schema.edgeLabel('drivenBy')
+      .properties('created')
+      .connection('vehicle', 'driver')
+      .ifNotExists().create()
+
+schema.edgeLabel('drivesOutOf')
+      .properties('created')
+      .connection('vehicle', 'terminal')
       .ifNotExists().create()
 
 schema.edgeLabel('managedBy')
@@ -206,4 +227,3 @@ schema.edgeLabel('baseSettings')
       .properties('created')
       .connection('setting', 'organizationalUnit')
       .ifNotExists().create()
-
