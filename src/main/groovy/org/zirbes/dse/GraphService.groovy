@@ -46,21 +46,16 @@ class GraphService implements Closeable {
 
     GraphResultSet execute(String statement) {
         log.info "executing query: ${statement}"
-        execute(new SimpleGraphStatement(statement))
+        session.executeGraph(statement)
     }
 
-    GraphResultSet execute(GraphStatement statement) {
-        log.info "executing query: ${statement}"
-        session.executeGraph(statement)
+    GraphResultSet execute(String statement, Map<String, Object> params) {
+        log.info "executing query: ${statement} with params: ${params}"
+        session.executeGraph(statement, params)
     }
 
     void load(String resource) {
         execute SchemaLoader.loadScript("/${resource}.groovy")
-    }
-
-    GraphResultSet getOrg(String name) {
-        // WARN: Gremlin QL Injection vulnerable!!!
-        return execute("g.V().has(label, 'organization').has('name', '${name}')")
     }
 
     void reset() {

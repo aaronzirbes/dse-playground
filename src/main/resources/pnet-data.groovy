@@ -108,7 +108,8 @@ Vertex pfmBurt = graph.addVertex(T.label, 'pfmentity',
 
 deanOrg.addEdge('hasUser', zirbes)
 deanOrg.addEdge('pfmSource', pfmDean)
-deanOrg.addEdge('containsUnit', texarkana)
+deanOrg.addEdge('child', texarkana)
+texarkana.addEdge('parent', texarkana)
 
 zirbes.addEdge('belongsTo', deanOrg)
 zirbes.addEdge('belongsTo', texarkana)

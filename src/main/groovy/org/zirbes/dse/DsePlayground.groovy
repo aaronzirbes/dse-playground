@@ -13,6 +13,7 @@ class DsePlayground implements Closeable {
 
     void run() {
         demo.run()
+        //demo.runLocal()
     }
 
     @Override
