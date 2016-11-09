@@ -1,30 +1,19 @@
-// NOTE: `system` is only available via gremlin console
-
-// gremlin> system.graph('zorg').ifNotExists().create()
-// gremlin> :remote config alias g zorg.g
-// gremlin> :load /Users/ajz/dev/groovy/dse-playground/graph-schema.groovy
-
-
-//~ Meta-class tips
-// schema.metaClass.methods*.name.sort().unique()
-// schema.propertyKey('name').metaClass.methods*.name.sort().unique()
-
 // Property Keys
 
-schema.propertyKey('serialNumber').Text().ifNotExists().create()
-schema.propertyKey('name').Text().ifNotExists().create()
-schema.propertyKey('description').Text().ifNotExists().create()
-schema.propertyKey('type').Text().ifNotExists().create()
-schema.propertyKey('key').Text().ifNotExists().create()
-schema.propertyKey('code').Text().ifNotExists().create()
-schema.propertyKey('number').Text().ifNotExists().create()
-schema.propertyKey('username').Text().ifNotExists().create()
 schema.propertyKey('system').Text().ifNotExists().create()
-schema.propertyKey('email').Text().multiple().ifNotExists().create()
-schema.propertyKey('status').Text().ifNotExists().create()
+schema.propertyKey('username').Text().ifNotExists().create()
 schema.propertyKey('created').Timestamp().properties('username', 'system').ifNotExists().create()
 schema.propertyKey('updated').Timestamp().properties('username', 'system').ifNotExists().create()
+schema.propertyKey('description').Text().ifNotExists().create()
+schema.propertyKey('email').Text().multiple().ifNotExists().create()
 schema.propertyKey('id').Uuid().ifNotExists().create()
+schema.propertyKey('key').Text().ifNotExists().create()
+schema.propertyKey('name').Text().ifNotExists().create()
+schema.propertyKey('number').Text().ifNotExists().create()
+schema.propertyKey('pfmSyncEnableDate').Timestamp().ifNotExists().create()
+schema.propertyKey('serialNumber').Text().ifNotExists().create()
+schema.propertyKey('status').Text().ifNotExists().create()
+schema.propertyKey('type').Text().ifNotExists().create()
 
 // Vertex Labels
 
@@ -34,21 +23,17 @@ schema.vertexLabel('state').properties('name').ifNotExists().create()
 schema.vertexLabel('organization').properties('id',
                                               'name',
                                               'status',
+                                              'pfmSyncEnableDate',
                                               'created',
                                               'updated').ifNotExists().create()
 
 schema.vertexLabel('organizationalUnit')
-      .properties('id', 'name', 'created', 'updated')
+      .properties('id', 'name', 'pfmSyncEnableDate', 'created', 'updated')
       .ifNotExists().create()
 
 // this hold source IDs for PFM relations
 schema.vertexLabel('pfmentity')
-      .properties('id', 'name', 'type', 'key', 'code', 'description', 'created', 'updated')
-      .ifNotExists().create()
-
-// Not sure if this should just map directly to organization or not
-schema.vertexLabel('customer')
-      .properties('id', 'name', 'status', 'created', 'updated')
+      .properties('id', 'name', 'type', 'key', 'description', 'created', 'updated')
       .ifNotExists().create()
 
 schema.vertexLabel('device')
@@ -96,7 +81,6 @@ schema.edgeLabel('hasUser')
       .ifNotExists().create()
 
 schema.edgeLabel('pfmSource')
-      .connection('customer', 'pfmentity')
       .connection('device', 'pfmentity')
       .connection('display', 'pfmentity')
       .connection('driver', 'pfmentity')
@@ -110,7 +94,7 @@ schema.edgeLabel('pfmSource')
 
 schema.edgeLabel('state')
       .connection('organization', 'state')
-      .connection('organizationUnit', 'state')
+      .connection('organizationalUnit', 'state')
       .connection('device', 'state')
       .connection('display', 'state')
       .connection('driver', 'state')
@@ -121,7 +105,6 @@ schema.edgeLabel('state')
       .ifNotExists().create()
 
 schema.edgeLabel('memberOf')
-      .connection('device', 'organization')
       .connection('display', 'organization')
       .connection('driver', 'organization')
       .connection('terminal', 'organization')
@@ -130,7 +113,14 @@ schema.edgeLabel('memberOf')
       .connection('vehicle', 'organization')
       .ifNotExists().create()
 
-schema.edgeLabel('containsUnit')
+schema.edgeLabel('parent')
+      .single()
+      .properties('created')
+      .connection('organizationalUnit', 'organization')
+      .connection('organizationalUnit', 'organizationalUnit')
+      .ifNotExists().create()
+
+schema.edgeLabel('child')
       .multiple()
       .properties('created')
       .connection('organization', 'organizationalUnit')
@@ -154,7 +144,8 @@ schema.edgeLabel('installedInto')
 schema.edgeLabel('based')
       .single()
       .properties('created')
-      .connection('driver', 'terminal')
+      .connection('driver', 'organizationalUnit')
+      .connection('vehicle', 'organizationalUnit')
       .ifNotExists().create()
 
 schema.edgeLabel('drives')
@@ -166,11 +157,6 @@ schema.edgeLabel('isUser')
       .single()
       .properties('created')
       .connection('driver', 'user')
-      .ifNotExists().create()
-
-schema.edgeLabel('hasDriver')
-      .properties('created')
-      .connection('terminal', 'driver')
       .ifNotExists().create()
 
 schema.edgeLabel('ofUnit')
@@ -186,26 +172,6 @@ schema.edgeLabel('hasPrivilege')
 schema.edgeLabel('tennantOf')
       .properties('created')
       .connection('organization', 'tennant')
-      .ifNotExists().create()
-
-schema.edgeLabel('hasDevice')
-      .properties('created')
-      .connection('vehicle', 'device')
-      .ifNotExists().create()
-
-schema.edgeLabel('outputs')
-      .properties('created')
-      .connection('vehicle', 'display')
-      .ifNotExists().create()
-
-schema.edgeLabel('drivenBy')
-      .properties('created')
-      .connection('vehicle', 'driver')
-      .ifNotExists().create()
-
-schema.edgeLabel('drivesOutOf')
-      .properties('created')
-      .connection('vehicle', 'terminal')
       .ifNotExists().create()
 
 schema.edgeLabel('managedBy')
@@ -227,3 +193,4 @@ schema.edgeLabel('baseSettings')
       .properties('created')
       .connection('setting', 'organizationalUnit')
       .ifNotExists().create()
+
